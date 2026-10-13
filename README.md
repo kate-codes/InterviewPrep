@@ -1,6 +1,37 @@
 # Interview prep — patient-message classification gateway
 
+## Assumptions
+
+This is a patient-message classification gateway service (or more generally a backend gateway service). It is an internal target system or 'proxy service' that a front-end gateway forwards traffic to after applying routing rules and policies
+
+Typically the gateway handles authN/Z handoffs, rate limiting, logging, and any default protocol conversion.
+
+We can use an ASGI test harness, and can install in coderpad and rename the coderpad_bundle to main. 
+
+```
+pip install fastapi httpx pydantic pydantic-settings pytest pytest-asyncio
+```
+
+### ASGI 
+or Asynchronous Server Gateway Interface is a tool or framework used to simulate HTTP requests and WebSocket connections against an ASGI (Asynchronous Server Gateway Interface) application (like FastAPI, Starlette, or Quartz) without running a full production web server like Uvicorn or Hypercorn.
+
+### What / Why Idempotency?
+
+Idempotency is a design property where executing an operation multiple times produces the exact same result and side effects as running it once. In Python development, this concept is crucial for making APIs, data pipelines, and system automation resilient to network timeouts, retries, and duplicate event deliveries.
+
 ## Layout
+
+```mermaid
+flowchart LR
+    Portal["Patient portal"] -->|"POST /classify"| Main["main.py\nauth · rate limit\nidempotency · request ID"]
+    Main --> RateLimit["ratelimit.py"]
+    Main --> Idem["idempotency.py"]
+    Main --> LLMClient["llm_client.py\nretry/backoff + circuit breaker"]
+    LLMClient -->|"POST /classify"| LLM["mock_llm_service.py"]
+    Main -->|response| Portal
+
+    Shared["config.py · models.py · logging_utils.py\n(settings, schemas, PHI-safe logging — used throughout)"] -.-> Main
+```
 
 - `mock_llm_service.py` — stands in for "the LLM classification service."
   Returns `{label, confidence}`, with headers to inject delay / 500s /
@@ -21,9 +52,6 @@
 - `tests/test_gateway.py` — exercises every hardening behavior against a
   mocked LLM transport (no network, no real server needed)
 
-## What / Why Idempotency?
-
-Idempotency is a design property where executing an operation multiple times produces the exact same result and side effects as running it once. In Python development, this concept is crucial for making APIs, data pipelines, and system automation resilient to network timeouts, retries, and duplicate event deliveries.
 
 ## Run it
 
