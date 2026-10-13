@@ -11,8 +11,8 @@ Requires: fastapi, httpx, pydantic, pydantic-settings, pytest, pytest-asyncio
 If CoderPad's pad type doesn't allow `pip install`, this will fail on import --
 see the chat message for how to check that before the interview.
 
-Run the embedded tests with:  python coderpad_bundle.py
-(or, in a terminal-enabled pad:  pytest coderpad_bundle.py -v)
+Run the embedded tests with:  python main.py
+(or, in a terminal-enabled pad:  pytest main.py -v)
 """
 
 import asyncio
@@ -618,6 +618,6 @@ async def test_rate_limit_enforced():
 
 
 if __name__ == "__main__":
-    # `python coderpad_bundle.py` runs the embedded pytest suite directly --
+    # `python main.py` runs the embedded pytest suite directly --
     # handy on a pad with no separate terminal/pytest invocation available.
     raise SystemExit(pytest.main([__file__, "-v"]))
